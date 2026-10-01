@@ -22,16 +22,27 @@ const SCHEMA = [
     install_link TEXT, install_link_id TEXT, install_paid INTEGER DEFAULT 0,
     takedown_link TEXT, takedown_link_id TEXT, takedown_paid INTEGER DEFAULT 0,
     stripe_session TEXT,
-    admin_notes TEXT
+    admin_notes TEXT,
+    address_verified INTEGER DEFAULT 0, lat REAL, lon REAL
   )`,
   `CREATE INDEX IF NOT EXISTS idx_install ON bookings (install_date, install_kind)`,
   `CREATE INDEX IF NOT EXISTS idx_takedown ON bookings (takedown_date, takedown_kind)`,
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)`,
 ];
 
+// Columns added after the first release. Adding one that exists just errors, which is fine.
+const ADDED_COLUMNS = [
+  "ALTER TABLE bookings ADD COLUMN address_verified INTEGER DEFAULT 0",
+  "ALTER TABLE bookings ADD COLUMN lat REAL",
+  "ALTER TABLE bookings ADD COLUMN lon REAL",
+];
+
 export async function ensureSchema(db) {
   if (schemaReady) return;
   await db.batch(SCHEMA.map((s) => db.prepare(s)));
+  for (const sql of ADDED_COLUMNS) {
+    try { await db.prepare(sql).run(); } catch { /* already there */ }
+  }
   schemaReady = true;
 }
 

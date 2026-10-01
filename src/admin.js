@@ -234,6 +234,7 @@ async function renderDashboard(env, url) {
             <header><h3>${esc(b.name)}</h3><span class="muted">${b.stories === 2 ? "Two-story" : "Single-story"} · ${esc(CONFIG.packages[b.package]?.name || b.package)} · ${b.kit ? "Bought kit" : "Own lights"}</span></header>
             <p><a href="https://maps.google.com/?q=${encodeURIComponent(b.address + " " + b.zip)}" target="_blank" rel="noopener">${esc(b.address)}, ${esc(b.zip)}</a><br>
             <a href="tel:${esc(b.phone)}">${esc(b.phone)}</a> · <a href="mailto:${esc(b.email)}">${esc(b.email)}</a></p>
+            ${b.address_verified ? "" : `<p class="note"><strong>Address not verified.</strong> No map database could find it. Check the map link to confirm it's in your area, and refund the deposit in Stripe if it isn't.</p>`}
             ${addons ? `<p class="muted">Add-ons: ${esc(addons)}</p>` : ""}
             ${b.access_notes ? `<p class="note">Access: ${esc(b.access_notes)}</p>` : ""}
             <p class="muted">Paid at booking: ${usd((b.paid_today_cents || 0) / 100)}${b.kit_total ? ` (includes ${usd(b.kit_total)} kit)` : ""}</p>

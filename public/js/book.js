@@ -56,6 +56,8 @@ $("#next-1").addEventListener("click", async () => {
       err.textContent = r.reason;
       return;
     }
+    state.addressVerified = r.verified;
+    $("#unverified-note").hidden = r.verified !== false;
     show(2);
   } catch {
     err.textContent = "We couldn't check that address. Check your connection and try again.";

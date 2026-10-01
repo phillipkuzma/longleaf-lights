@@ -13,12 +13,15 @@ export const CONFIG = {
     timezone: "America/New_York",
   },
 
-  // Who we serve. A ZIP must match. If allowedStreets has entries, the street
-  // name must also contain one of them (case-insensitive).
+  // Who we serve: a box covering RiverTown, from the river east to just past
+  // Longleaf Pine Parkway, and from Shores at RiverTown north to just below
+  // Bartram Trail High School. Addresses are looked up on a map and must land
+  // inside. Addresses no map database knows yet (new streets) can still book,
+  // flagged for you to confirm.
   serviceArea: {
     zips: ["32259"],
-    allowedStreets: [],
-    description: "homes in St. Johns, FL 32259",
+    bounds: { north: 30.0445, south: 30.011, west: -81.649, east: -81.609 },
+    description: "homes between SR 13 and Longleaf Pine Parkway in St. Johns, FL",
   },
 
   // Packages are sized by front roofline length.

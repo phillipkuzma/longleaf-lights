@@ -4,6 +4,7 @@ import { buildSeason, availableDates, isBookable, kindForStories, capacityFor } 
 import { ensureSchema, slotCounts, getSettings, emptySettings, ACTIVE } from "./db.js";
 import { stripe, verifyWebhook } from "./stripe.js";
 import { handleAdmin } from "./admin.js";
+import { geocode, inServiceArea } from "./geo.js";
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -35,24 +36,27 @@ export default {
 
 // ---------------------------------------------------------------------------
 
-export function checkAddress(street, zip) {
+export async function checkAddress(street, zip) {
   const z = String(zip || "").trim().slice(0, 5);
   const s = String(street || "").trim();
-  if (s.length < 5) return { ok: false, reason: "Enter your street address." };
+  if (s.length < 5 || !/\d/.test(s)) return { ok: false, reason: "Enter your street address, including the house number." };
   if (!/^\d{5}$/.test(z)) return { ok: false, reason: "Enter a 5-digit ZIP code." };
-  if (!CONFIG.serviceArea.zips.includes(z)) {
-    return { ok: false, reason: `We currently install for ${CONFIG.serviceArea.description}. Your ZIP is outside our area.` };
+  const outside = `We currently install for ${CONFIG.serviceArea.description}. That address is outside our area.`;
+  if (!CONFIG.serviceArea.zips.includes(z)) return { ok: false, reason: outside };
+
+  const spot = await geocode(s, z);
+  if (!spot) {
+    // New streets often aren't in map databases yet. Let them book; flag for review.
+    return { ok: true, verified: false };
   }
-  const streets = CONFIG.serviceArea.allowedStreets;
-  if (streets.length && !streets.some((st) => s.toLowerCase().includes(st.toLowerCase()))) {
-    return { ok: false, reason: "Your street is outside our current service area." };
-  }
-  return { ok: true };
+  if (!inServiceArea(spot.lat, spot.lon)) return { ok: false, reason: outside };
+  return { ok: true, verified: true, lat: spot.lat, lon: spot.lon };
 }
 
 async function checkAddressRoute(request) {
   const body = await request.json().catch(() => ({}));
-  return json(checkAddress(body.street, body.zip));
+  const r = await checkAddress(body.street, body.zip);
+  return json({ ok: r.ok, verified: r.verified, reason: r.reason });
 }
 
 async function loadSchedule(env) {
@@ -102,7 +106,7 @@ async function bookRoute(request, env, url) {
   if (!name) return json({ error: "Enter your name." }, 400);
   if (!EMAIL_RE.test(email)) return json({ error: "Enter a valid email address." }, 400);
   if (phone.replace(/\D/g, "").length < 10) return json({ error: "Enter a phone number with area code." }, 400);
-  const addr = checkAddress(street, zip);
+  const addr = await checkAddress(street, zip);
   if (!addr.ok) return json({ error: addr.reason }, 400);
   if (b.agree !== true) return json({ error: "Please agree to the booking terms." }, 400);
 
@@ -143,9 +147,10 @@ async function bookRoute(request, env, url) {
     `INSERT INTO bookings (
       id, created_at, status, hold_expires, name, email, phone, address, zip, access_notes,
       stories, package, kit, addons, install_date, install_kind, takedown_date, takedown_kind,
-      install_total, takedown_total, kit_total, kit_tax_cents, due_today_cents, takedown_status
+      install_total, takedown_total, kit_total, kit_tax_cents, due_today_cents, takedown_status,
+      address_verified, lat, lon
     )
-    SELECT ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    SELECT ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
     WHERE (SELECT COUNT(*) FROM bookings WHERE install_date = ? AND install_kind = ? AND ${ACTIVE}) < ?
       AND (? IS NULL OR (SELECT COUNT(*) FROM bookings WHERE takedown_date = ? AND takedown_kind = ? AND ${ACTIVE}) < ?)`
   )
@@ -155,6 +160,7 @@ async function bookRoute(request, env, url) {
       b.installDate, kind, takedownDate, takedownDate ? kind : null,
       quote.install.total, quote.takedown ? quote.takedown.total : null, quote.kitPrice,
       Math.round(quote.kitTax * 100), dueTodayCents, takedownDate ? "scheduled" : null,
+      addr.verified ? 1 : 0, addr.lat ?? null, addr.lon ?? null,
       b.installDate, kind, now, installCap,
       takedownDate, takedownDate, kind, now, takedownCap
     )
