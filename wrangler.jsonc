@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "longleaf-lights",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/admin", "/admin/*"]
+  },
+  "observability": { "enabled": true }
+  // The bookings database gets connected here in a later step:
+  // "d1_databases": [{ "binding": "DB", "database_name": "longleaf-lights", "database_id": "..." }]
+}

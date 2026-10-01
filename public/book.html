@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book your install · Longleaf Lights</title>
+<meta name="theme-color" content="#16213d">
+<link rel="icon" href="/images/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body class="book-page">
+<header class="site-header solid">
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/images/logo.svg" alt="" width="44" height="44">Longleaf Lights</a>
+    <nav class="site-nav" aria-label="Main"><a class="nav-link" href="/#pricing">Pricing</a><a class="nav-link" href="/#questions">Questions</a></nav>
+  </div>
+</header>
+
+<main class="wrap book-layout">
+  <div>
+    <ol class="progress" id="progress" aria-label="Booking steps">
+      <li data-step="1">Address</li><li data-step="2">Your home</li><li data-step="3">Dates</li><li data-step="4">Your details</li>
+    </ol>
+
+    <div class="notice" id="cancel-notice" hidden><p>Checkout was cancelled and nothing was charged. Your dates were released, so pick them again below.</p></div>
+
+    <!-- Step 1 -->
+    <section class="panel step" data-step="1" aria-labelledby="h1">
+      <h1 id="h1">Let's check your address</h1>
+      <p class="lede" id="area-lede">We install for homes in St. Johns, FL 32259.</p>
+      <div class="field"><label for="street">Street address</label><input type="text" id="street" autocomplete="street-address" placeholder="123 Pine Needle Way"></div>
+      <div class="field"><label for="zip">ZIP code</label><input type="text" id="zip" inputmode="numeric" autocomplete="postal-code" maxlength="5" style="max-width:9rem"></div>
+      <p class="error" id="err-1" role="alert"></p>
+      <div class="nav-buttons"><span></span><button class="btn btn-pine" id="next-1">Check address</button></div>
+    </section>
+
+    <!-- Step 2 -->
+    <section class="panel step" data-step="2" hidden aria-labelledby="h2">
+      <h1 id="h2">Tell us about your home</h1>
+      <fieldset>
+        <legend class="legend">How many stories?</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="stories" value="1" checked><span class="card"><strong>One story</strong><span>Installed on a weekend evening</span></span></label>
+          <label class="choice"><input type="radio" name="stories" value="2"><span class="card"><strong>Two stories</strong><span>Installed by day on a Lift Weekend, plus a <span data-lift-fee>$150</span> lift fee per visit</span></span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="legend">Package, by front roofline length</legend>
+        <div class="choices" id="package-choices"></div>
+      </fieldset>
+      <fieldset>
+        <legend class="legend">Lights</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="kit" value="1" checked><span class="card"><strong>Buy a light kit</strong><span id="kit-desc">Warm white LED, yours to keep</span></span></label>
+          <label class="choice"><input type="radio" name="kit" value="0"><span class="card"><strong>Use my own lights</strong><span>Outdoor-rated and working</span></span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="legend">Add-ons (optional)</legend>
+        <div class="addons" id="addons"></div>
+      </fieldset>
+      <div class="nav-buttons"><button class="btn btn-outline" data-back>Back</button><button class="btn btn-pine" id="next-2">Choose dates</button></div>
+    </section>
+
+    <!-- Step 3 -->
+    <section class="panel step" data-step="3" hidden aria-labelledby="h3">
+      <h1 id="h3">Pick your dates</h1>
+      <div id="lift-notice" class="notice" hidden></div>
+      <fieldset>
+        <legend class="legend" id="install-legend">Install date</legend>
+        <p class="hint" id="install-hint"></p>
+        <div id="install-dates"></div>
+      </fieldset>
+      <fieldset>
+        <legend class="legend">Takedown in January?</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="wantTakedown" value="1" checked><span class="card"><strong>Yes, book a takedown</strong><span><span data-dep-takedown>$50</span> deposit holds the date</span></span></label>
+          <label class="choice"><input type="radio" name="wantTakedown" value="0"><span class="card"><strong>No, I'll take them down</strong><span>You can't add one online later, so text us if you change your mind</span></span></label>
+        </div>
+        <div id="takedown-wrap" style="margin-top:1rem"><div id="takedown-dates"></div></div>
+      </fieldset>
+      <p class="error" id="err-3" role="alert"></p>
+      <div class="nav-buttons"><button class="btn btn-outline" data-back>Back</button><button class="btn btn-pine" id="next-3">Continue</button></div>
+    </section>
+
+    <!-- Step 4 -->
+    <section class="panel step" data-step="4" hidden aria-labelledby="h4">
+      <h1 id="h4">Your details</h1>
+      <div class="field"><label for="name">Full name</label><input type="text" id="name" autocomplete="name"></div>
+      <div class="row">
+        <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email"></div>
+        <div class="field"><label for="phone">Mobile phone</label><input type="tel" id="phone" autocomplete="tel"></div>
+      </div>
+      <p class="hint" style="margin-top:-.5rem;margin-bottom:1rem;font-size:var(--step--1);color:var(--muted)">We text your balance links and day-of updates to this number.</p>
+      <div class="field"><label for="notes">Anything we should know?</label>
+        <textarea id="notes" rows="3" placeholder="Gate code, where the outdoor outlet is, dogs in the yard, sides of the house you'd like lit"></textarea></div>
+      <label class="check"><input type="checkbox" id="agree">
+        <span>I understand deposits are non-refundable if I cancel and come off each visit's bill. The rest of each visit is due after that visit. If a two-story Lift Weekend doesn't reach its minimum, I can move dates or get a full refund. I'll make an outdoor outlet available.</span></label>
+      <p class="error" id="err-4" role="alert"></p>
+      <div class="nav-buttons"><button class="btn btn-outline" data-back>Back</button><button class="btn btn-bulb" id="pay">Pay deposit</button></div>
+    </section>
+  </div>
+
+  <aside class="summary" aria-live="polite" id="summary"><h2>Your quote</h2><p>Choose a package to see your price.</p></aside>
+</main>
+<script type="module" src="/js/book.js"></script>
+</body>
+</html>
